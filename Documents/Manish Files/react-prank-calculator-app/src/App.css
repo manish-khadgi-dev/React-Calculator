@@ -156,6 +156,8 @@ body {
 
 .prank {
   animation: shake 0.5s;
+  background: red !important;
+  color: white;
 }
 
 @keyframes shake {

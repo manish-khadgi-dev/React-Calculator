@@ -2,14 +2,20 @@ import { useState } from "react";
 import "./App.css";
 import { BtnArea } from "./components/BtnArea";
 import { Display } from "./components/Display";
+import aa from "./aa.wav";
 
-const operators = ["-", "+", "/", "*" ,"."];
+const operators = ["-", "+", "/", "*", "."];
 
 const App = () => {
   const [str, setStr] = useState("");
   const [lastOp, setLastOp] = useState("");
+  const [isPrank, setIsPrank] = useState(false);
+
+  const audio = new Audio(aa);
+
   const handleOnClick = (val) => {
     console.log(val);
+    isPrank && setIsPrank(false);
 
     if (val === "AC") {
       setStr("");
@@ -23,48 +29,58 @@ const App = () => {
 
     if (val === "=") {
       const lastItem = str[str.length - 1];
-      const strDisplay = str;
+      let strDisplay = str;
 
       if (operators.includes(lastItem)) {
         strDisplay = str.slice(0, -1);
       }
-      setStr(eval(strDisplay).toString());
+      const extra = extraValue();
+
+      extra && setIsPrank(true);
+      extra && audio.play();
+
+      const ttl = eval(strDisplay) + extra;
+      console.log(ttl, extra);
+
+      setStr(ttl.toString());
       return;
     }
-
 
     // Prevent multiple operators
-    if(operators.includes(val)){
-     setLastOp(val);
-     if(!str){
+    if (operators.includes(val)) {
+      setLastOp(val);
+      if (!str) {
+        return;
+      }
+      const lastItem = str[str.length - 1];
+      let tempStr = str;
+      if (operators.includes(lastItem)) {
+        tempStr = str.slice(0, -1);
+      }
+      setStr(tempStr + val);
       return;
-     }
-     const lastItem = str[str.length - 1];
-     let tempStr = str;
-     if(operators.includes(lastItem)){
-      tempStr = str.slice( 0, -1);
-     }
-     setStr(tempStr + val)
-     return;
     }
     // make no more than 1 dot
-    if(val === "."){
-      if(lastOp){
+    if (val === ".") {
+      if (lastOp) {
         const opIndex = str.lastIndexOf(lastOp);
         const LastNum = str.slice(opIndex + 1);
-         if (LastNum.includes(".")){
+        if (LastNum.includes(".")) {
           return;
-         }
-        
-         if (!LastNum && str.includes(".")){
+        }
+
+        if (!LastNum && str.includes(".")) {
           return;
-         }
-        
+        }
       }
-      }
-  
+    }
 
     setStr(str + val);
+  };
+
+  const extraValue = () => {
+    const num = Math.round(Math.random() * 10);
+    return num > 3 ? 0 : num;
   };
 
   return (
@@ -72,7 +88,7 @@ const App = () => {
       <div className="wrapper">
         <div className="circle"></div>
         <div className="calculator">
-          <Display str={str} />
+          <Display str={str} isPrank={isPrank} />
           <BtnArea handleOnClick={handleOnClick} />
         </div>
       </div>
